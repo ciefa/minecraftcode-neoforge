@@ -23,9 +23,16 @@ public class MarkdownParser {
     private static final Pattern LINK_PATTERN = Pattern.compile("\\[([^\\]]+?)\\]\\(([^\\)]+?)\\)");
 
     /**
-     * Parse markdown text into formatted lines
+     * Parse markdown text into formatted lines with word wrapping
      */
     public static List<FormattedLine> parse(String markdownText, int baseColor) {
+        return parse(markdownText, baseColor, 1200); // Default max width
+    }
+
+    /**
+     * Parse markdown text into formatted lines with specified max width
+     */
+    public static List<FormattedLine> parse(String markdownText, int baseColor, int maxWidth) {
         List<FormattedLine> lines = new ArrayList<>();
         String[] rawLines = markdownText.split("\n");
 
@@ -41,23 +48,33 @@ public class MarkdownParser {
                     codeBlockLang = line.trim().substring(3).trim();
                     // Add a separator line
                     FormattedLine separator = new FormattedLine();
-                    separator.addSegment("┌─[ " + (codeBlockLang.isEmpty() ? "code" : codeBlockLang) + " ]", COLOR_CODE);
+                    separator.addSegment("[ " + (codeBlockLang.isEmpty() ? "code" : codeBlockLang) + " ]", COLOR_CODE);
                     lines.add(separator);
                 } else {
                     // Ending code block
                     inCodeBlock = false;
                     FormattedLine separator = new FormattedLine();
-                    separator.addSegment("└" + "─".repeat(20), COLOR_CODE);
+                    separator.addSegment("", COLOR_CODE); // Empty separator
                     lines.add(separator);
                 }
                 continue;
             }
 
             if (inCodeBlock) {
-                // Code block line - preserve formatting, indent, use code color
-                FormattedLine codeLine = new FormattedLine(new ArrayList<>(), true, 1);
-                codeLine.addSegment(line, COLOR_CODE_BLOCK);
-                lines.add(codeLine);
+                // Code block line - wrap if too long
+                if (line.length() > 120) { // Wrap very long code lines
+                    int chunkSize = 120;
+                    for (int i = 0; i < line.length(); i += chunkSize) {
+                        String chunk = line.substring(i, Math.min(i + chunkSize, line.length()));
+                        FormattedLine codeLine = new FormattedLine(new ArrayList<>(), true, 1);
+                        codeLine.addSegment(chunk, COLOR_CODE_BLOCK);
+                        lines.add(codeLine);
+                    }
+                } else {
+                    FormattedLine codeLine = new FormattedLine(new ArrayList<>(), true, 1);
+                    codeLine.addSegment(line, COLOR_CODE_BLOCK);
+                    lines.add(codeLine);
+                }
             } else {
                 // Regular line - parse inline markdown
                 FormattedLine formattedLine = parseInlineMarkdown(line, baseColor);

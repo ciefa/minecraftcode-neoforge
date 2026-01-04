@@ -248,33 +248,43 @@ public class OpenCodeGuiScreen extends Screen {
         guiGraphics.fill(0, 0, this.width, this.height, 0xFF1a1210); // Full warm brown background
         guiGraphics.fill(terminalX, terminalY, terminalX + terminalWidth, terminalY + terminalHeight, BACKGROUND_COLOR);
 
-        // Draw border (terminal-style double line)
+        // Draw border (clean graphical rectangles)
         drawTerminalBorder(guiGraphics, terminalX, terminalY, terminalWidth, terminalHeight);
 
-        // Draw title bar (with more spacing from top border)
-        String title = "┤ OpenCode Terminal ├";
+        // Draw title bar (centered, with spacing from top border)
+        String title = "OpenCode Terminal";
         int titleX = terminalX + (terminalWidth - this.font.width(title)) / 2;
-        guiGraphics.drawString(this.font, title, titleX, terminalY + 11, BORDER_COLOR, false);
+        guiGraphics.drawString(this.font, title, titleX, terminalY + 8, BORDER_COLOR, false);
 
-        // Draw message history (adjusted for title spacing)
-        int messageY = terminalY + 24;
+        // Draw message history with proper margins
+        int borderThickness = 2;
+        int messageX = terminalX + borderThickness + 8; // Left margin inside border
+        int messageY = terminalY + 24; // Below title
+        int maxX = terminalX + terminalWidth - borderThickness - 8; // Right margin
         int maxY = terminalY + terminalHeight - 40;
+        int messageWidth = maxX - messageX;
         int lineHeight = this.font.lineHeight + 2;
 
         // Calculate how many lines can actually fit on screen
-        int availableHeight = maxY - (terminalY + 24);
+        int availableHeight = maxY - messageY;
         int maxVisibleLines = Math.max(1, availableHeight / lineHeight);
 
         int startIndex = Math.max(0, messageHistory.size() - maxVisibleLines - scrollOffset);
         int endIndex = Math.min(messageHistory.size(), startIndex + maxVisibleLines);
 
+        // Enable scissor (clipping) to prevent text overflow
+        guiGraphics.enableScissor(messageX, messageY, maxX, maxY);
+
         for (int i = startIndex; i < endIndex; i++) {
             if (messageY >= maxY) break;
 
             FormattedLine line = messageHistory.get(i);
-            renderFormattedLine(guiGraphics, line, terminalX + 10, messageY);
+            renderFormattedLine(guiGraphics, line, messageX, messageY, messageWidth);
             messageY += lineHeight;
         }
+
+        // Disable scissor
+        guiGraphics.disableScissor();
 
         // Draw input prompt
         int inputY = terminalY + terminalHeight - 30;
@@ -289,34 +299,33 @@ public class OpenCodeGuiScreen extends Screen {
         // Render widgets (input field)
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 
-        // Draw scroll indicator if needed (tan/brown color)
+        // Draw scroll indicator if needed (inside terminal, bottom right)
         if (messageHistory.size() > maxVisibleLines) {
-            String scrollInfo = String.format("[↑↓ to scroll | %d/%d]",
+            String scrollInfo = String.format("[↑↓ scroll %d/%d]",
                 Math.max(0, messageHistory.size() - maxVisibleLines - scrollOffset),
                 messageHistory.size() - maxVisibleLines);
-            // Position below the bottom border (border is at -10, text goes at -2)
-            guiGraphics.drawString(this.font, scrollInfo, terminalX + terminalWidth - this.font.width(scrollInfo) - 10,
-                terminalY + terminalHeight - 2, 0xFFffbf00, false); // Amber
+            // Position inside bottom border
+            int scrollX = terminalX + terminalWidth - this.font.width(scrollInfo) - 12;
+            int scrollY = terminalY + terminalHeight - 12;
+            guiGraphics.drawString(this.font, scrollInfo, scrollX, scrollY, 0xFFffbf00, false); // Amber
         }
     }
 
     private void drawTerminalBorder(GuiGraphics guiGraphics, int x, int y, int width, int height) {
-        int borderCharWidth = this.font.width("─");
-        int sideCharWidth = this.font.width("│");
+        int borderThickness = 2;
 
+        // Draw solid border rectangles
         // Top border
-        guiGraphics.drawString(this.font, "┌" + "─".repeat((width - 20) / borderCharWidth) + "┐",
-            x, y, BORDER_COLOR, false);
+        guiGraphics.fill(x, y, x + width, y + borderThickness, BORDER_COLOR);
 
         // Bottom border
-        guiGraphics.drawString(this.font, "└" + "─".repeat((width - 20) / borderCharWidth) + "┘",
-            x, y + height - 10, BORDER_COLOR, false);
+        guiGraphics.fill(x, y + height - borderThickness, x + width, y + height, BORDER_COLOR);
 
-        // Side borders (adjusted right side for proper alignment)
-        for (int i = 10; i < height - 10; i += this.font.lineHeight) {
-            guiGraphics.drawString(this.font, "│", x, y + i, BORDER_COLOR, false);
-            guiGraphics.drawString(this.font, "│", x + width - 9, y + i, BORDER_COLOR, false);
-        }
+        // Left border
+        guiGraphics.fill(x, y, x + borderThickness, y + height, BORDER_COLOR);
+
+        // Right border
+        guiGraphics.fill(x + width - borderThickness, y, x + width, y + height, BORDER_COLOR);
     }
 
     @Override
@@ -407,9 +416,9 @@ public class OpenCodeGuiScreen extends Screen {
     }
 
     /**
-     * Renders a formatted line with multiple colored segments
+     * Renders a formatted line with multiple colored segments, clipped to max width
      */
-    private void renderFormattedLine(GuiGraphics guiGraphics, FormattedLine line, int x, int y) {
+    private void renderFormattedLine(GuiGraphics guiGraphics, FormattedLine line, int x, int y, int maxWidth) {
         int currentX = x;
 
         // Add indentation for code blocks and lists
@@ -417,10 +426,25 @@ public class OpenCodeGuiScreen extends Screen {
             currentX += this.font.width("  ");
         }
 
-        // Draw each segment
+        // Draw each segment with boundary checking
         for (TextSegment segment : line.getSegments()) {
             String text = segment.getText();
             int color = segment.getEffectiveColor();
+
+            // Check if we have space left
+            int remainingWidth = (x + maxWidth) - currentX;
+            if (remainingWidth <= 0) break;
+
+            // Truncate text if it's too long
+            int textWidth = this.font.width(text);
+            if (textWidth > remainingWidth) {
+                // Find how much of the text fits
+                String truncated = text;
+                while (this.font.width(truncated + "...") > remainingWidth && truncated.length() > 0) {
+                    truncated = truncated.substring(0, truncated.length() - 1);
+                }
+                text = truncated + "...";
+            }
 
             guiGraphics.drawString(this.font, text, currentX, y, color, false);
             currentX += this.font.width(text);
