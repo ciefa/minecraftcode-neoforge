@@ -235,8 +235,8 @@ public class OpenCodeGuiScreen extends Screen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        // Render dark background to prevent blur
-        renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+        // Render dark background
+        renderBackground(guiGraphics);
 
         // Calculate dimensions with proper margins
         int terminalWidth = this.width - 40;
@@ -357,15 +357,15 @@ public class OpenCodeGuiScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
         // Scroll with mouse wheel
         int availableHeight = (this.height - 40 - 40 - 24);
         int lineHeight = this.font.lineHeight + 2;
         int maxVisibleLines = Math.max(1, availableHeight / lineHeight);
 
-        if (deltaY > 0) {
+        if (delta > 0) {
             scrollOffset = Math.min(scrollOffset + 1, Math.max(0, messageHistory.size() - maxVisibleLines));
-        } else if (deltaY < 0) {
+        } else if (delta < 0) {
             scrollOffset = Math.max(0, scrollOffset - 1);
         }
         return true;
