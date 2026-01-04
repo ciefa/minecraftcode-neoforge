@@ -6,7 +6,9 @@ import com.mojang.brigadier.context.CommandContext;
 import com.opencode.minecraft.OpenCodeMod;
 import com.opencode.minecraft.client.OpenCodeClient;
 import com.opencode.minecraft.client.session.SessionInfo;
+import com.opencode.minecraft.gui.OpenCodeGuiScreen;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -20,6 +22,7 @@ import java.util.List;
  * Commands:
  * - /oc                 - Show help
  * - /oc help            - Show help
+ * - /oc gui             - Open ModernUI GUI interface
  * - /oc <prompt>        - Send a prompt to OpenCode
  * - /oc status          - Show connection and session status
  * - /oc session new     - Create a new session
@@ -41,6 +44,10 @@ public class OpenCodeCommand {
                 // /oc help
                 .then(Commands.literal("help")
                     .executes(OpenCodeCommand::executeHelp))
+
+                // /oc gui
+                .then(Commands.literal("gui")
+                    .executes(OpenCodeCommand::executeGui))
 
                 // /oc status
                 .then(Commands.literal("status")
@@ -93,6 +100,8 @@ public class OpenCodeCommand {
         source.sendSystemMessage(Component.literal("=== OpenCode Commands ===").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD));
         source.sendSystemMessage(Component.literal("/oc <prompt>").withStyle(ChatFormatting.GREEN)
                 .append(Component.literal(" - Send a prompt").withStyle(ChatFormatting.GRAY)));
+        source.sendSystemMessage(Component.literal("/oc gui").withStyle(ChatFormatting.GREEN)
+                .append(Component.literal(" - Open GUI interface").withStyle(ChatFormatting.GRAY)));
         source.sendSystemMessage(Component.literal("/oc status").withStyle(ChatFormatting.GREEN)
                 .append(Component.literal(" - Show status").withStyle(ChatFormatting.GRAY)));
         source.sendSystemMessage(Component.literal("/oc session new").withStyle(ChatFormatting.GREEN)
@@ -108,6 +117,14 @@ public class OpenCodeCommand {
         source.sendSystemMessage(Component.literal("/oc help").withStyle(ChatFormatting.GREEN)
                 .append(Component.literal(" - Show this help").withStyle(ChatFormatting.GRAY)));
 
+        return 1;
+    }
+
+    private static int executeGui(CommandContext<CommandSourceStack> context) {
+        // Open terminal GUI on client thread
+        Minecraft.getInstance().execute(() -> {
+            Minecraft.getInstance().setScreen(new OpenCodeGuiScreen());
+        });
         return 1;
     }
 

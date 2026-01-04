@@ -30,6 +30,8 @@ public class OpenCodeClient {
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private volatile boolean initialized = false;
+    private volatile java.util.function.Consumer<String> guiMessageListener = null;
+    private volatile Runnable guiResponseCompleteListener = null;
 
     public OpenCodeClient(ModConfig config, PauseController pauseController) {
         this.config = config;
@@ -99,6 +101,10 @@ public class OpenCodeClient {
                     if ("idle".equals(statusType)) {
                         sessionManager.onSessionIdle();
                         messageRenderer.sendSystemMessage("Ready for input");
+                        // Notify GUI that response is complete
+                        if (guiResponseCompleteListener != null) {
+                            guiResponseCompleteListener.run();
+                        }
                     } else if ("busy".equals(statusType)) {
                         sessionManager.onSessionBusy();
                         messageRenderer.sendSystemMessage("Processing...");
@@ -108,7 +114,8 @@ public class OpenCodeClient {
                     handlePartUpdated(event);
                 }
                 case "message.created" -> {
-                    messageRenderer.startNewMessage();
+                    // Don't clutter chat with message creation events
+                    // messageRenderer.startNewMessage();
                 }
                 case "session.error" -> {
                     messageRenderer.sendErrorMessage("Session error occurred");
@@ -138,7 +145,13 @@ public class OpenCodeClient {
                     pauseController.onDeltaReceived();
                     String delta = event.getDelta();
                     if (delta != null && !delta.isEmpty()) {
-                        messageRenderer.appendDelta(delta);
+                        // Don't send AI text to chat - only show in GUI
+                        // messageRenderer.appendDelta(delta);
+
+                        // Notify GUI listener if present
+                        if (guiMessageListener != null) {
+                            guiMessageListener.accept(delta);
+                        }
                     }
                 }
             }
@@ -265,6 +278,35 @@ public class OpenCodeClient {
      */
     public SessionStatus getStatus() {
         return sessionManager.getStatus();
+    }
+
+    /**
+     * Gets the message history for a session
+     */
+    public CompletableFuture<com.google.gson.JsonArray> getSessionMessages(String sessionId) {
+        return httpClient.getSessionMessages(sessionId);
+    }
+
+    /**
+     * Sets a listener for real-time message updates (for GUI)
+     */
+    public void setGuiMessageListener(java.util.function.Consumer<String> listener) {
+        this.guiMessageListener = listener;
+    }
+
+    /**
+     * Sets a listener for when a response completes (for GUI)
+     */
+    public void setGuiResponseCompleteListener(Runnable listener) {
+        this.guiResponseCompleteListener = listener;
+    }
+
+    /**
+     * Removes the GUI message listeners
+     */
+    public void clearGuiMessageListener() {
+        this.guiMessageListener = null;
+        this.guiResponseCompleteListener = null;
     }
 
     /**

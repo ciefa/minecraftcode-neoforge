@@ -30,3 +30,9 @@ repo
 
 # Fabric version backup
 FabricVersion/
+
+# External libs
+libs/
+
+# Logs
+*.log

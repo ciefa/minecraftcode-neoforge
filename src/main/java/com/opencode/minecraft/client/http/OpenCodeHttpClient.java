@@ -75,10 +75,11 @@ public class OpenCodeHttpClient {
     public CompletableFuture<SessionInfo> createSession() {
         JsonObject body = new JsonObject();
 
+        // Don't send x-opencode-directory header - let OpenCode use its default directory
+        // (The mod's config directory contains a config file that OpenCode doesn't understand)
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/session"))
                 .header("Content-Type", "application/json")
-                .header("x-opencode-directory", directory)
                 .timeout(Duration.ofSeconds(10))
                 .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
                 .build();
@@ -99,7 +100,6 @@ public class OpenCodeHttpClient {
     public CompletableFuture<List<SessionInfo>> listSessions() {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/session"))
-                .header("x-opencode-directory", directory)
                 .timeout(Duration.ofSeconds(10))
                 .GET()
                 .build();
@@ -124,7 +124,6 @@ public class OpenCodeHttpClient {
     public CompletableFuture<SessionInfo> getSession(String sessionId) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/session/" + sessionId))
-                .header("x-opencode-directory", directory)
                 .timeout(Duration.ofSeconds(10))
                 .GET()
                 .build();
@@ -188,7 +187,6 @@ public class OpenCodeHttpClient {
     public CompletableFuture<Void> abortSession(String sessionId) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/session/" + sessionId + "/abort"))
-                .header("x-opencode-directory", directory)
                 .timeout(Duration.ofSeconds(10))
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
@@ -198,6 +196,30 @@ public class OpenCodeHttpClient {
                     if (response.statusCode() != 200 && response.statusCode() != 204) {
                         OpenCodeMod.LOGGER.warn("Abort returned status: {}", response.statusCode());
                     }
+                });
+    }
+
+    /**
+     * Gets the message history for a session
+     */
+    public CompletableFuture<JsonArray> getSessionMessages(String sessionId) {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/session/" + sessionId + "/message"))
+                .timeout(Duration.ofSeconds(10))
+                .GET()
+                .build();
+
+        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(response -> {
+                    if (response.statusCode() != 200) {
+                        OpenCodeMod.LOGGER.warn("Failed to get messages: {}", response.statusCode());
+                        return new JsonArray();
+                    }
+                    return JsonParser.parseString(response.body()).getAsJsonArray();
+                })
+                .exceptionally(e -> {
+                    OpenCodeMod.LOGGER.warn("Failed to get messages: {}", e.getMessage());
+                    return new JsonArray();
                 });
     }
 
@@ -222,7 +244,6 @@ public class OpenCodeHttpClient {
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(baseUrl + "/global/event"))
                         .header("Accept", "text/event-stream")
-                        .header("x-opencode-directory", directory)
                         .GET()
                         .build();
 
