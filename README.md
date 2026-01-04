@@ -1,13 +1,13 @@
-# OpenCode Minecraft (NeoForge)
+# OpenCode Minecraft (Forge)
 
-[![Minecraft](https://img.shields.io/badge/Minecraft-1.21.1-brightgreen.svg)](https://minecraft.net)
-[![NeoForge](https://img.shields.io/badge/Mod%20Loader-NeoForge-orange.svg)](https://neoforged.net)
-[![Java](https://img.shields.io/badge/Java-21+-orange.svg)](https://adoptium.net)
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-brightgreen.svg)](https://minecraft.net)
+[![Forge](https://img.shields.io/badge/Mod%20Loader-Forge-orange.svg)](https://minecraftforge.net)
+[![Java](https://img.shields.io/badge/Java-17+-orange.svg)](https://adoptium.net)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> **Note:** This is a NeoForge port for Minecraft 1.21.1. For the original Fabric version, see [DNGriffin/minecraftcode](https://github.com/DNGriffin/minecraftcode).
+> **Note:** This is a Forge port for Minecraft 1.20.1. For the original Fabric version, see [DNGriffin/minecraftcode](https://github.com/DNGriffin/minecraftcode).
 
-A NeoForge mod that integrates [OpenCode](https://opencode.ai/) into Minecraft Java Edition single player, with a unique pause mechanic that freezes the game while the AI is waiting for input and resumes when it's actively working.
+A Forge mod that integrates [OpenCode](https://opencode.ai/) into Minecraft Java Edition single player, with a unique pause mechanic that freezes the game while the AI is waiting for input and resumes when it's actively working.
 
 ## Demo
 
@@ -29,7 +29,7 @@ https://github.com/user-attachments/assets/e3aad745-a03a-4c0f-b83c-ce15f92d66ed
 
 ## Quick Start
 
-1. Install [NeoForge](https://neoforged.net/) for Minecraft 1.21.1
+1. Install [Forge](https://files.minecraftforge.net/) for Minecraft 1.20.1
 2. Download the mod JAR from [Releases](../../releases) and place it in your `.minecraft/mods` folder
 3. Start OpenCode: `opencode`
 4. Launch Minecraft and create/join a single player world
@@ -38,9 +38,9 @@ https://github.com/user-attachments/assets/e3aad745-a03a-4c0f-b83c-ce15f92d66ed
 
 ## Requirements
 
-- Minecraft 1.21.1
-- NeoForge 21.1.72+
-- Java 21+
+- Minecraft 1.20.1
+- Forge 47.2.0+
+- Java 17+
 - [OpenCode](https://github.com/anthropics/opencode) running in server mode (`opencode serve`)
 
 ## Installation
@@ -53,8 +53,8 @@ https://github.com/user-attachments/assets/e3aad745-a03a-4c0f-b83c-ce15f92d66ed
 ### Option 2: Build from Source
 
 ```bash
-git clone https://github.com/yourusername/opencode-minecraft-neoforge.git
-cd opencode-minecraft-neoforge
+git clone https://github.com/yourusername/opencode-minecraft-forge.git
+cd opencode-minecraft-forge
 ./gradlew build
 ```
 
@@ -138,7 +138,7 @@ Configuration is stored in `.minecraft/config/opencode.json`:
 - Look at Minecraft logs for errors
 
 ### "Connection Lost" when joining world
-- Ensure you're using the correct mod version for Minecraft 1.21.1
+- Ensure you're using the correct mod version for Minecraft 1.20.1
 - Try `./gradlew clean build` if building from source
 - Check for conflicting mods
 
