@@ -9,12 +9,12 @@ import java.util.regex.Pattern;
  * Parses markdown text into formatted lines with styled segments
  */
 public class MarkdownParser {
-    // Autumn theme color palette
-    private static final int COLOR_TEXT = 0xFFf4e8d0;      // Cream text
-    private static final int COLOR_BOLD = 0xFFe67700;      // Orange for bold/headers
-    private static final int COLOR_CODE = 0xFFd4a574;      // Tan for inline code
-    private static final int COLOR_CODE_BLOCK = 0xFFc9b896; // Light tan for code blocks
-    private static final int COLOR_LINK = 0xFFdaa520;      // Goldenrod for links
+    // Expanded autumn theme color palette - vibrant and varied
+    private static final int COLOR_TEXT = 0xFFfff8dc;      // Warm white (cornsilk)
+    private static final int COLOR_BOLD = 0xFFb7410e;      // Rust red for bold/headers
+    private static final int COLOR_CODE = 0xFFffd700;      // Golden yellow for inline code
+    private static final int COLOR_CODE_BLOCK = 0xFFd2691e; // Copper for code blocks
+    private static final int COLOR_LINK = 0xFF800020;      // Burgundy for links
 
     // Regex patterns for inline markdown
     private static final Pattern BOLD_PATTERN = Pattern.compile("\\*\\*(.+?)\\*\\*|__(.+?)__");

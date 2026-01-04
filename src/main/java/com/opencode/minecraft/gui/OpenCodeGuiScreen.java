@@ -23,12 +23,12 @@ import java.util.List;
  */
 public class OpenCodeGuiScreen extends Screen {
 
-    // Autumn theme colors
-    private static final int BACKGROUND_COLOR = 0xE01a1614; // Dark brown (semi-transparent)
-    private static final int BORDER_COLOR = 0xFFe67700; // Orange border
-    private static final int TEXT_COLOR = 0xFFf4e8d0; // Cream text
-    private static final int INPUT_COLOR = 0xFFfaf0e6; // Bright cream input
-    private static final int PROMPT_COLOR = 0xFFe67700; // Orange prompt
+    // Expanded autumn theme colors - vibrant reds, oranges, golds, and coppers
+    private static final int BACKGROUND_COLOR = 0xE01a1210; // Dark warm brown (semi-transparent)
+    private static final int BORDER_COLOR = 0xFFff8c42; // Burnt orange border
+    private static final int TEXT_COLOR = 0xFFfff8dc; // Warm white (cornsilk)
+    private static final int INPUT_COLOR = 0xFFfff8dc; // Warm white input
+    private static final int PROMPT_COLOR = 0xFFff8c42; // Burnt orange prompt
 
     private EditBox inputField;
     private List<FormattedLine> messageHistory;
@@ -114,7 +114,7 @@ public class OpenCodeGuiScreen extends Screen {
     private void onResponseComplete() {
         if (receivingResponse) {
             // Add spacing after completed response
-            addMessage("", 0xFF8b6f47);
+            addMessage("", 0xFFffbf00); // Amber
             receivingResponse = false;
         }
     }
@@ -146,20 +146,20 @@ public class OpenCodeGuiScreen extends Screen {
         }
 
         // Parse markdown and add the new text
-        List<FormattedLine> parsedLines = MarkdownParser.parse(newText, 0xFFdaa520); // Goldenrod for responses
+        List<FormattedLine> parsedLines = MarkdownParser.parse(newText, 0xFFff8c00); // Dark orange for responses
         messageHistory.addAll(parsedLines);
     }
 
     private void loadMessageHistory() {
         // Add header
-        addMessage("[SYSTEM] OpenCode Terminal v1.0", 0xFFe67700); // Orange
-        addMessage("", 0xFF8b6f47);
+        addMessage("[SYSTEM] OpenCode Terminal v1.0", 0xFFff8c42); // Burnt orange
+        addMessage("", 0xFFffbf00);
 
         // Get current session and load messages
         SessionInfo session = OpenCodeMod.getClient().getCurrentSession();
         if (session != null) {
-            addMessage("[SYSTEM] Loading session: " + session.getId(), 0xFF8b6f47);
-            addMessage("", 0xFF8b6f47);
+            addMessage("[SYSTEM] Loading session: " + session.getId(), 0xFFffbf00); // Amber
+            addMessage("", 0xFFffbf00);
 
             // Fetch messages asynchronously
             OpenCodeMod.getClient().getCurrentSession();
@@ -167,9 +167,9 @@ public class OpenCodeGuiScreen extends Screen {
             // For now, we'll need to add a method to OpenCodeClient to expose this
             loadSessionMessages(session.getId());
         } else {
-            addMessage("[SYSTEM] No active session", 0xFF8b6f47);
-            addMessage("[SYSTEM] Run '/oc session new' to create a session", 0xFF8b6f47);
-            addMessage("", 0xFF8b6f47);
+            addMessage("[SYSTEM] No active session", 0xFFffbf00); // Amber
+            addMessage("[SYSTEM] Run '/oc session new' to create a session", 0xFFffbf00);
+            addMessage("", 0xFFffbf00);
         }
     }
 
@@ -179,12 +179,12 @@ public class OpenCodeGuiScreen extends Screen {
                     // Process on main thread
                     net.minecraft.client.Minecraft.getInstance().execute(() -> {
                         if (messages.size() == 0) {
-                            addMessage("[SYSTEM] No messages in session yet", 0xFF8b6f47);
-                            addMessage("[SYSTEM] Type your prompt below to start", 0xFF8b6f47);
-                            addMessage("", 0xFF8b6f47);
+                            addMessage("[SYSTEM] No messages in session yet", 0xFFffbf00); // Amber
+                            addMessage("[SYSTEM] Type your prompt below to start", 0xFFffbf00);
+                            addMessage("", 0xFFffbf00);
                         } else {
-                            addMessage("[SYSTEM] Loaded " + messages.size() + " messages", 0xFF8b6f47);
-                            addMessage("", 0xFF8b6f47);
+                            addMessage("[SYSTEM] Loaded " + messages.size() + " messages", 0xFFffbf00); // Amber
+                            addMessage("", 0xFFffbf00);
 
                             // Parse and display each message
                             for (JsonElement msgElement : messages) {
@@ -195,8 +195,8 @@ public class OpenCodeGuiScreen extends Screen {
                 })
                 .exceptionally(e -> {
                     net.minecraft.client.Minecraft.getInstance().execute(() -> {
-                        addMessage("[ERROR] Failed to load messages: " + e.getMessage(), 0xFFff0000);
-                        addMessage("", 0xFF8b6f47);
+                        addMessage("[ERROR] Failed to load messages: " + e.getMessage(), 0xFFdc143c); // Crimson red
+                        addMessage("", 0xFFffbf00);
                     });
                     return null;
                 });
@@ -222,15 +222,15 @@ public class OpenCodeGuiScreen extends Screen {
                 String text = part.get("text").getAsString();
 
                 if ("user".equals(role)) {
-                    addMessage("[YOU] " + text, 0xFFf4a261); // Light orange/peach
+                    addMessage("[YOU] " + text, 0xFFffa07a); // Light salmon
                 } else if ("assistant".equals(role)) {
-                    addMessage("[OPENCODE] " + text, 0xFFdaa520); // Goldenrod
+                    addMessage("[OPENCODE] " + text, 0xFFff8c00); // Dark orange
                 }
             }
         }
 
         // Add spacing after each message exchange
-        addMessage("", 0xFF8b6f47);
+        addMessage("", 0xFFffbf00);
     }
 
     @Override
@@ -244,8 +244,8 @@ public class OpenCodeGuiScreen extends Screen {
         int terminalX = 20;
         int terminalY = 20;
 
-        // Draw terminal background (autumn dark brown)
-        guiGraphics.fill(0, 0, this.width, this.height, 0xFF1a1614); // Full dark brown background
+        // Draw terminal background (warm dark brown)
+        guiGraphics.fill(0, 0, this.width, this.height, 0xFF1a1210); // Full warm brown background
         guiGraphics.fill(terminalX, terminalY, terminalX + terminalWidth, terminalY + terminalHeight, BACKGROUND_COLOR);
 
         // Draw border (terminal-style double line)
@@ -280,11 +280,11 @@ public class OpenCodeGuiScreen extends Screen {
         int inputY = terminalY + terminalHeight - 30;
         guiGraphics.drawString(this.font, ">", terminalX + 10, inputY + 6, PROMPT_COLOR, false);
 
-        // Draw input field border (darker brown)
+        // Draw input field border (darker copper)
         int inputBoxX = terminalX + 25;
         int inputBoxY = inputY + 2;
         int inputBoxWidth = terminalWidth - 35;
-        guiGraphics.fill(inputBoxX, inputBoxY, inputBoxX + inputBoxWidth, inputBoxY + 18, 0xFF3e342e);
+        guiGraphics.fill(inputBoxX, inputBoxY, inputBoxX + inputBoxWidth, inputBoxY + 18, 0xFF4a2f1e);
 
         // Render widgets (input field)
         super.render(guiGraphics, mouseX, mouseY, partialTick);
@@ -294,8 +294,9 @@ public class OpenCodeGuiScreen extends Screen {
             String scrollInfo = String.format("[↑↓ to scroll | %d/%d]",
                 Math.max(0, messageHistory.size() - maxVisibleLines - scrollOffset),
                 messageHistory.size() - maxVisibleLines);
+            // Position below the bottom border (border is at -10, text goes at -2)
             guiGraphics.drawString(this.font, scrollInfo, terminalX + terminalWidth - this.font.width(scrollInfo) - 10,
-                terminalY + terminalHeight - 10, 0xFF8b6f47, false);
+                terminalY + terminalHeight - 2, 0xFFffbf00, false); // Amber
         }
     }
 
@@ -367,13 +368,13 @@ public class OpenCodeGuiScreen extends Screen {
             // Check if we have an active session
             SessionInfo session = OpenCodeMod.getClient().getCurrentSession();
             if (session == null) {
-                addMessage("[ERROR] No active session. Run '/oc session new' first", 0xFFff0000);
+                addMessage("[ERROR] No active session. Run '/oc session new' first", 0xFFdc143c); // Crimson red
                 this.inputField.setValue("");
                 return;
             }
 
-            addMessage("[YOU] " + text, 0xFFf4a261); // Light orange/peach for user input
-            addMessage("", 0xFF8b6f47); // Empty line for spacing
+            addMessage("[YOU] " + text, 0xFFffa07a); // Light salmon for user input
+            addMessage("", 0xFFffbf00); // Empty line for spacing
             this.inputField.setValue("");
 
             // Reset response tracking
@@ -384,7 +385,7 @@ public class OpenCodeGuiScreen extends Screen {
             OpenCodeMod.getClient().sendPrompt(text)
                     .exceptionally(e -> {
                         net.minecraft.client.Minecraft.getInstance().execute(() -> {
-                            addMessage("[ERROR] Failed to send message: " + e.getMessage(), 0xFFff0000);
+                            addMessage("[ERROR] Failed to send message: " + e.getMessage(), 0xFFdc143c); // Crimson red
                         });
                         return null;
                     });
