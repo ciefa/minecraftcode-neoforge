@@ -7,7 +7,7 @@
 
 > **Note:** This is a NeoForge port for Minecraft 1.21.1. For the original Fabric version, see [DNGriffin/minecraftcode](https://github.com/DNGriffin/minecraftcode).
 
-A NeoForge mod that integrates [OpenCode](https://github.com/anthropics/opencode) into Minecraft Java Edition single player, with a unique pause mechanic that freezes the game while the AI is waiting for input and resumes when it's actively working.
+A NeoForge mod that integrates [OpenCode](https://opencode.ai/) into Minecraft Java Edition single player, with a unique pause mechanic that freezes the game while the AI is waiting for input and resumes when it's actively working.
 
 ## Demo
 
