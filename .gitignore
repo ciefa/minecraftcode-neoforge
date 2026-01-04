@@ -24,3 +24,9 @@ runs
 run-data
 
 repo
+
+# Claude Code
+.claude/
+
+# Fabric version backup
+FabricVersion/
