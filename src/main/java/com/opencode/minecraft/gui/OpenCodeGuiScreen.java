@@ -238,9 +238,9 @@ public class OpenCodeGuiScreen extends Screen {
         // Render dark background to prevent blur
         renderBackground(guiGraphics, mouseX, mouseY, partialTick);
 
-        // Calculate dimensions
+        // Calculate dimensions with proper margins
         int terminalWidth = this.width - 40;
-        int terminalHeight = this.height - 40;
+        int terminalHeight = this.height - 40; // Balanced margins
         int terminalX = 20;
         int terminalY = 20;
 
@@ -299,14 +299,14 @@ public class OpenCodeGuiScreen extends Screen {
         // Render widgets (input field)
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 
-        // Draw scroll indicator if needed (inside terminal, bottom right)
+        // Draw scroll indicator if needed (inside terminal, above input field)
         if (messageHistory.size() > maxVisibleLines) {
             String scrollInfo = String.format("[↑↓ scroll %d/%d]",
                 Math.max(0, messageHistory.size() - maxVisibleLines - scrollOffset),
                 messageHistory.size() - maxVisibleLines);
-            // Position inside bottom border
+            // Position above input field, bottom right
             int scrollX = terminalX + terminalWidth - this.font.width(scrollInfo) - 12;
-            int scrollY = terminalY + terminalHeight - 12;
+            int scrollY = terminalY + terminalHeight - 40; // Above input, inside border
             guiGraphics.drawString(this.font, scrollInfo, scrollX, scrollY, 0xFFffbf00, false); // Amber
         }
     }
