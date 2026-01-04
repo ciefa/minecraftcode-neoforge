@@ -94,7 +94,6 @@ public class OpenCodeGuiScreen extends Screen {
             // Start of a new response
             receivingResponse = true;
             currentAssistantMessage.setLength(0);
-            addMessage("[OPENCODE] ", 0xFFdaa520);
         }
 
         // Append delta to current message
@@ -122,27 +121,23 @@ public class OpenCodeGuiScreen extends Screen {
      * Updates the last message in the history (used for streaming updates)
      */
     private void updateLastMessage(String newText) {
-        if (messageHistory.isEmpty()) {
-            return;
-        }
-
-        // Remove old wrapped lines from the last message
-        // Find where the last message starts by looking backwards
-        int lastMessageStart = messageHistory.size() - 1;
-        while (lastMessageStart > 0) {
-            TerminalLine line = messageHistory.get(lastMessageStart - 1);
-            // If this line starts with a prefix like [YOU] or [OPENCODE], it's a different message
-            if (line.text.startsWith("[") && !line.text.equals("")) {
+        // Find where the last assistant message starts by looking backwards
+        int lastMessageStart = messageHistory.size();
+        
+        // Look for the last [OPENCODE] message
+        for (int i = messageHistory.size() - 1; i >= 0; i--) {
+            TerminalLine line = messageHistory.get(i);
+            if (line.text.startsWith("[OPENCODE]")) {
+                lastMessageStart = i;
                 break;
             }
-            // Empty lines separate messages
-            if (line.text.isEmpty()) {
+            // Stop at empty lines or other message types
+            if (line.text.isEmpty() || line.text.startsWith("[YOU]") || line.text.startsWith("[SYSTEM]")) {
                 break;
             }
-            lastMessageStart--;
         }
 
-        // Remove old wrapped lines
+        // Remove old assistant message lines
         while (messageHistory.size() > lastMessageStart) {
             messageHistory.remove(messageHistory.size() - 1);
         }
