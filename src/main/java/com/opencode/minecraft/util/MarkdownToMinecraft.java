@@ -1,8 +1,8 @@
 package com.opencode.minecraft.util;
 
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,27 +19,27 @@ public class MarkdownToMinecraft {
     private static final Pattern HEADER_PATTERN = Pattern.compile("^(#{1,3})\\s+(.+)$");
 
     /**
-     * Converts a markdown string to Minecraft Text
+     * Converts a markdown string to Minecraft Component
      */
-    public static Text convert(String markdown) {
+    public static Component convert(String markdown) {
         if (markdown == null || markdown.isEmpty()) {
-            return Text.empty();
+            return Component.empty();
         }
 
         // Check for headers first
         Matcher headerMatcher = HEADER_PATTERN.matcher(markdown);
         if (headerMatcher.matches()) {
             String headerText = headerMatcher.group(2);
-            return Text.literal(headerText)
-                    .formatted(Formatting.BOLD, Formatting.UNDERLINE);
+            return Component.literal(headerText)
+                    .withStyle(ChatFormatting.BOLD, ChatFormatting.UNDERLINE);
         }
 
         // Process inline formatting
         return processInlineFormatting(markdown);
     }
 
-    private static Text processInlineFormatting(String text) {
-        MutableText result = Text.empty();
+    private static Component processInlineFormatting(String text) {
+        MutableComponent result = Component.empty();
 
         // Track position in the string
         int pos = 0;
@@ -51,8 +51,8 @@ public class MarkdownToMinecraft {
             if (text.substring(pos).startsWith("`")) {
                 Matcher codeMatcher = CODE_PATTERN.matcher(text.substring(pos));
                 if (codeMatcher.find() && codeMatcher.start() == 0) {
-                    result.append(Text.literal(codeMatcher.group(1))
-                            .formatted(Formatting.GRAY, Formatting.ITALIC));
+                    result.append(Component.literal(codeMatcher.group(1))
+                            .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
                     pos += codeMatcher.end();
                     matched = true;
                 }
@@ -62,8 +62,8 @@ public class MarkdownToMinecraft {
             if (!matched && text.substring(pos).startsWith("**")) {
                 Matcher boldMatcher = BOLD_PATTERN.matcher(text.substring(pos));
                 if (boldMatcher.find() && boldMatcher.start() == 0) {
-                    result.append(Text.literal(boldMatcher.group(1))
-                            .formatted(Formatting.BOLD));
+                    result.append(Component.literal(boldMatcher.group(1))
+                            .withStyle(ChatFormatting.BOLD));
                     pos += boldMatcher.end();
                     matched = true;
                 }
@@ -73,8 +73,8 @@ public class MarkdownToMinecraft {
             if (!matched && text.substring(pos).startsWith("*")) {
                 Matcher italicMatcher = ITALIC_PATTERN.matcher(text.substring(pos));
                 if (italicMatcher.find() && italicMatcher.start() == 0) {
-                    result.append(Text.literal(italicMatcher.group(1))
-                            .formatted(Formatting.ITALIC));
+                    result.append(Component.literal(italicMatcher.group(1))
+                            .withStyle(ChatFormatting.ITALIC));
                     pos += italicMatcher.end();
                     matched = true;
                 }
@@ -88,7 +88,7 @@ public class MarkdownToMinecraft {
                     nextSpecial = text.length();
                 }
 
-                result.append(Text.literal(text.substring(pos, nextSpecial)));
+                result.append(Component.literal(text.substring(pos, nextSpecial)));
                 pos = nextSpecial;
             }
         }

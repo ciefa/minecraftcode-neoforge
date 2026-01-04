@@ -1,24 +1,26 @@
-# Gradle
-.gradle/
-build/
-out/
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
 
-# IDE
-.idea/
-*.iml
+# idea
+out
 *.ipr
 *.iws
-.vscode/
-*.launch
+*.iml
+.idea
 
-# Minecraft
-run/
-logs/
+# gradle
+build
+.gradle
 
-# OS
-.DS_Store
-Thumbs.db
+# other
+eclipse
+run
+runs
+run-data
 
-# Loom
-remappedSrc/
-.fabric/
+repo

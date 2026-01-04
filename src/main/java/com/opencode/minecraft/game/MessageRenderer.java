@@ -1,10 +1,10 @@
 package com.opencode.minecraft.game;
 
 import com.opencode.minecraft.util.MarkdownToMinecraft;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 /**
  * Renders OpenCode messages in Minecraft chat.
@@ -62,14 +62,14 @@ public class MessageRenderer {
      * Adds a user message to chat
      */
     public void addUserMessage(String text) {
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
         if (client.player == null) return;
 
-        MutableText message = Text.literal("")
-                .append(Text.literal("[You] ").formatted(Formatting.GREEN))
-                .append(Text.literal(text).formatted(Formatting.WHITE));
+        MutableComponent message = Component.literal("")
+                .append(Component.literal("[You] ").withStyle(ChatFormatting.GREEN))
+                .append(Component.literal(text).withStyle(ChatFormatting.WHITE));
 
-        client.inGameHud.getChatHud().addMessage(message);
+        client.gui.getChat().addMessage(message);
     }
 
     /**
@@ -83,66 +83,66 @@ public class MessageRenderer {
      * Sends an assistant message to chat
      */
     private void sendAssistantMessage(String text) {
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
         if (client.player == null) return;
 
         // Convert markdown to Minecraft formatting
-        Text formatted = MarkdownToMinecraft.convert(text);
+        Component formatted = MarkdownToMinecraft.convert(text);
 
-        MutableText message = Text.literal("")
-                .append(Text.literal("[OpenCode] ").formatted(Formatting.AQUA))
+        MutableComponent message = Component.literal("")
+                .append(Component.literal("[OpenCode] ").withStyle(ChatFormatting.AQUA))
                 .append(formatted);
 
-        client.inGameHud.getChatHud().addMessage(message);
+        client.gui.getChat().addMessage(message);
     }
 
     /**
      * Sends a system message (status, errors, etc.)
      */
     public void sendSystemMessage(String text) {
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
         if (client.player == null) return;
 
-        MutableText message = Text.literal("")
-                .append(Text.literal("[OpenCode] ").formatted(Formatting.GOLD))
-                .append(Text.literal(text).formatted(Formatting.YELLOW));
+        MutableComponent message = Component.literal("")
+                .append(Component.literal("[OpenCode] ").withStyle(ChatFormatting.GOLD))
+                .append(Component.literal(text).withStyle(ChatFormatting.YELLOW));
 
-        client.inGameHud.getChatHud().addMessage(message);
+        client.gui.getChat().addMessage(message);
     }
 
     /**
      * Sends an error message
      */
     public void sendErrorMessage(String text) {
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
         if (client.player == null) return;
 
-        MutableText message = Text.literal("")
-                .append(Text.literal("[OpenCode Error] ").formatted(Formatting.RED))
-                .append(Text.literal(text).formatted(Formatting.RED));
+        MutableComponent message = Component.literal("")
+                .append(Component.literal("[OpenCode Error] ").withStyle(ChatFormatting.RED))
+                .append(Component.literal(text).withStyle(ChatFormatting.RED));
 
-        client.inGameHud.getChatHud().addMessage(message);
+        client.gui.getChat().addMessage(message);
     }
 
     /**
      * Sends a tool execution message
      */
     public void sendToolMessage(String toolName, String status) {
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
         if (client.player == null) return;
 
-        Formatting statusColor = switch (status) {
-            case "running" -> Formatting.YELLOW;
-            case "completed" -> Formatting.GREEN;
-            case "failed" -> Formatting.RED;
-            default -> Formatting.GRAY;
+        ChatFormatting statusColor = switch (status) {
+            case "running" -> ChatFormatting.YELLOW;
+            case "completed" -> ChatFormatting.GREEN;
+            case "failed" -> ChatFormatting.RED;
+            default -> ChatFormatting.GRAY;
         };
 
-        MutableText message = Text.literal("")
-                .append(Text.literal("[Tool] ").formatted(Formatting.DARK_PURPLE))
-                .append(Text.literal(toolName + ": ").formatted(Formatting.LIGHT_PURPLE))
-                .append(Text.literal(status).formatted(statusColor));
+        MutableComponent message = Component.literal("")
+                .append(Component.literal("[Tool] ").withStyle(ChatFormatting.DARK_PURPLE))
+                .append(Component.literal(toolName + ": ").withStyle(ChatFormatting.LIGHT_PURPLE))
+                .append(Component.literal(status).withStyle(statusColor));
 
-        client.inGameHud.getChatHud().addMessage(message);
+        client.gui.getChat().addMessage(message);
     }
 }

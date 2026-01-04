@@ -3,7 +3,7 @@ package com.opencode.minecraft.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.opencode.minecraft.OpenCodeMod;
-import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.fml.loading.FMLPaths;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,10 +19,10 @@ public class ConfigManager {
     private ModConfig config;
 
     public ConfigManager() {
-        this.configPath = FabricLoader.getInstance()
-                .getConfigDir()
-                .resolve(CONFIG_FILE);
+        this.configPath = FMLPaths.CONFIGDIR.get().resolve(CONFIG_FILE);
         this.config = new ModConfig();
+        // Set default working directory to Minecraft config directory
+        this.config.workingDirectory = FMLPaths.CONFIGDIR.get().toString();
     }
 
     /**
@@ -73,6 +73,11 @@ public class ConfigManager {
 
     public void setLastSessionId(String sessionId) {
         config.lastSessionId = sessionId;
+        save();
+    }
+
+    public void setPauseEnabled(boolean enabled) {
+        config.pauseEnabled = enabled;
         save();
     }
 }

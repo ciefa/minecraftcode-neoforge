@@ -1,4 +1,0 @@
-accessWidener v2 named
-
-# Access to IntegratedServer for pause control
-accessible class net/minecraft/server/integrated/IntegratedServer

@@ -33,4 +33,9 @@ public class ModConfig {
      * Whether to show status in action bar
      */
     public boolean showStatusBar = true;
+
+    /**
+     * Whether the pause controller is enabled
+     */
+    public boolean pauseEnabled = true;
 }

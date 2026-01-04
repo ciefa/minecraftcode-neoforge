@@ -2,7 +2,7 @@ package com.opencode.minecraft.game;
 
 import com.opencode.minecraft.OpenCodeMod;
 import com.opencode.minecraft.client.session.SessionStatus;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 /**
  * Controls game pause state based on OpenCode session status.
@@ -40,11 +40,11 @@ public class PauseController {
     public boolean shouldGameBePaused() {
         if (!enabled) return false;
 
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client == null || client.world == null) return false;
+        Minecraft client = Minecraft.getInstance();
+        if (client == null || client.level == null) return false;
 
         // Only pause in singleplayer
-        if (!client.isIntegratedServerRunning()) return false;
+        if (!client.isSingleplayer()) return false;
 
         // Don't pause until player is fully in the game
         if (client.player == null) return false;

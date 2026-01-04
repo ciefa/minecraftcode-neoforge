@@ -2,11 +2,11 @@ package com.opencode.minecraft.game;
 
 import com.opencode.minecraft.OpenCodeMod;
 import com.opencode.minecraft.client.session.SessionStatus;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 
 /**
  * Renders an overlay when the game is paused by OpenCode.
@@ -17,18 +17,18 @@ public class PauseOverlay {
      * Renders the pause overlay if the game is paused.
      * Called from HUD rendering.
      */
-    public static void render(DrawContext context, float tickDelta) {
+    public static void render(GuiGraphics context, float tickDelta) {
         PauseController pauseController = OpenCodeMod.getPauseController();
         if (pauseController == null || !pauseController.shouldGameBePaused()) {
             return;
         }
 
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
         if (client.player == null) return;
 
-        int screenWidth = client.getWindow().getScaledWidth();
-        int screenHeight = client.getWindow().getScaledHeight();
-        TextRenderer textRenderer = client.textRenderer;
+        int screenWidth = client.getWindow().getGuiScaledWidth();
+        int screenHeight = client.getWindow().getGuiScaledHeight();
+        Font textRenderer = client.font;
 
         // Semi-transparent dark overlay
         int overlayColor = 0x88000000;
@@ -39,25 +39,25 @@ public class PauseOverlay {
         String subMessage = getSubMessage(pauseController);
 
         // Center the text
-        int mainWidth = textRenderer.getWidth(mainMessage);
-        int subWidth = textRenderer.getWidth(subMessage);
+        int mainWidth = textRenderer.width(mainMessage);
+        int subWidth = textRenderer.width(subMessage);
 
         int centerX = screenWidth / 2;
         int centerY = screenHeight / 2;
 
         // Draw main message with shadow
-        context.drawTextWithShadow(
+        context.drawString(
             textRenderer,
-            Text.literal(mainMessage).formatted(Formatting.GOLD, Formatting.BOLD),
+            Component.literal(mainMessage).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD),
             centerX - mainWidth / 2,
             centerY - 20,
             0xFFFFAA00
         );
 
         // Draw sub message
-        context.drawTextWithShadow(
+        context.drawString(
             textRenderer,
-            Text.literal(subMessage).formatted(Formatting.GRAY),
+            Component.literal(subMessage).withStyle(ChatFormatting.GRAY),
             centerX - subWidth / 2,
             centerY + 5,
             0xFFAAAAAA
@@ -65,10 +65,10 @@ public class PauseOverlay {
 
         // Draw hint at bottom
         String hint = "Use /oc <prompt> to give OpenCode a task";
-        int hintWidth = textRenderer.getWidth(hint);
-        context.drawTextWithShadow(
+        int hintWidth = textRenderer.width(hint);
+        context.drawString(
             textRenderer,
-            Text.literal(hint).formatted(Formatting.DARK_GRAY, Formatting.ITALIC),
+            Component.literal(hint).withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC),
             centerX - hintWidth / 2,
             centerY + 30,
             0xFF666666

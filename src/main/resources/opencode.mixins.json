@@ -1,15 +1,15 @@
 {
     "required": true,
-    "minVersion": "0.8",
     "package": "com.opencode.minecraft.mixin",
     "compatibilityLevel": "JAVA_21",
+    "refmap": "opencode.refmap.json",
     "client": [
-        "MinecraftClientMixin",
         "IntegratedServerMixin",
         "KeyboardInputMixin",
-        "InGameHudMixin"
+        "GuiMixin"
     ],
     "injectors": {
         "defaultRequire": 1
-    }
+    },
+    "minVersion": "0.8"
 }

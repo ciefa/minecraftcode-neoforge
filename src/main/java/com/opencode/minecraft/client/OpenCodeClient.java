@@ -9,7 +9,7 @@ import com.opencode.minecraft.client.session.SessionStatus;
 import com.opencode.minecraft.config.ModConfig;
 import com.opencode.minecraft.game.MessageRenderer;
 import com.opencode.minecraft.game.PauseController;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -92,7 +92,7 @@ public class OpenCodeClient {
 
     private void handleEvent(SseEvent event) {
         // Dispatch to main thread
-        MinecraftClient.getInstance().execute(() -> {
+        Minecraft.getInstance().execute(() -> {
             switch (event.getType()) {
                 case "session.status" -> {
                     String statusType = event.getStatusType();
@@ -236,7 +236,7 @@ public class OpenCodeClient {
         return sessionManager.sendPrompt(text)
                 .thenAccept(response -> {
                     // Prompt was sent to TUI, response will come via SSE
-                    MinecraftClient.getInstance().execute(() -> {
+                    Minecraft.getInstance().execute(() -> {
                         if (response != null && response.startsWith("Error:")) {
                             messageRenderer.sendErrorMessage(response);
                             pauseController.setStatus(SessionStatus.IDLE);
