@@ -5,6 +5,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.opencode.minecraft.OpenCodeMod;
 import com.opencode.minecraft.client.session.SessionInfo;
+import com.opencode.minecraft.gui.markdown.FormattedLine;
+import com.opencode.minecraft.gui.markdown.MarkdownParser;
+import com.opencode.minecraft.gui.markdown.TextSegment;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -28,7 +31,7 @@ public class OpenCodeGuiScreen extends Screen {
     private static final int PROMPT_COLOR = 0xFFe67700; // Orange prompt
 
     private EditBox inputField;
-    private List<TerminalLine> messageHistory;
+    private List<FormattedLine> messageHistory;
     private int scrollOffset = 0;
     private static final int MAX_VISIBLE_LINES = 20;
     private StringBuilder currentAssistantMessage = new StringBuilder();
@@ -123,16 +126,17 @@ public class OpenCodeGuiScreen extends Screen {
     private void updateLastMessage(String newText) {
         // Find where the last assistant message starts by looking backwards
         int lastMessageStart = messageHistory.size();
-        
+
         // Look for the last [OPENCODE] message
         for (int i = messageHistory.size() - 1; i >= 0; i--) {
-            TerminalLine line = messageHistory.get(i);
-            if (line.text.startsWith("[OPENCODE]")) {
+            FormattedLine line = messageHistory.get(i);
+            String plainText = line.getPlainText();
+            if (plainText.trim().startsWith("[OPENCODE]")) {
                 lastMessageStart = i;
                 break;
             }
             // Stop at empty lines or other message types
-            if (line.text.isEmpty() || line.text.startsWith("[YOU]") || line.text.startsWith("[SYSTEM]")) {
+            if (plainText.trim().isEmpty() || plainText.trim().startsWith("[YOU]") || plainText.trim().startsWith("[SYSTEM]")) {
                 break;
             }
         }
@@ -142,12 +146,9 @@ public class OpenCodeGuiScreen extends Screen {
             messageHistory.remove(messageHistory.size() - 1);
         }
 
-        // Re-wrap and add the new text
-        int maxWidth = (this.width - 60);
-        List<String> wrappedLines = wrapText(newText, maxWidth);
-        for (String line : wrappedLines) {
-            messageHistory.add(new TerminalLine(line, 0xFFdaa520)); // Goldenrod for responses
-        }
+        // Parse markdown and add the new text
+        List<FormattedLine> parsedLines = MarkdownParser.parse(newText, 0xFFdaa520); // Goldenrod for responses
+        messageHistory.addAll(parsedLines);
     }
 
     private void loadMessageHistory() {
@@ -267,8 +268,8 @@ public class OpenCodeGuiScreen extends Screen {
         for (int i = startIndex; i < endIndex; i++) {
             if (messageY >= maxY) break;
 
-            TerminalLine line = messageHistory.get(i);
-            guiGraphics.drawString(this.font, line.text, terminalX + 10, messageY, line.color, false);
+            FormattedLine line = messageHistory.get(i);
+            renderFormattedLine(guiGraphics, line, terminalX + 10, messageY);
             messageY += lineHeight;
         }
 
@@ -384,13 +385,9 @@ public class OpenCodeGuiScreen extends Screen {
     }
 
     public void addMessage(String message, int color) {
-        // Word wrap long messages
-        int maxWidth = (this.width - 60);
-        List<String> wrappedLines = wrapText(message, maxWidth);
-
-        for (String line : wrappedLines) {
-            messageHistory.add(new TerminalLine(line, color));
-        }
+        // Parse markdown and add formatted lines
+        List<FormattedLine> parsedLines = MarkdownParser.parse(message, color);
+        messageHistory.addAll(parsedLines);
 
         // Keep scroll at bottom for new messages
         if (scrollOffset == 0) {
@@ -398,49 +395,29 @@ public class OpenCodeGuiScreen extends Screen {
         }
     }
 
-    private List<String> wrapText(String text, int maxWidth) {
-        List<String> lines = new ArrayList<>();
-        String[] words = text.split(" ");
-        StringBuilder currentLine = new StringBuilder();
+    /**
+     * Renders a formatted line with multiple colored segments
+     */
+    private void renderFormattedLine(GuiGraphics guiGraphics, FormattedLine line, int x, int y) {
+        int currentX = x;
 
-        for (String word : words) {
-            String testLine = currentLine.length() == 0 ? word : currentLine + " " + word;
-            if (this.font.width(testLine) <= maxWidth) {
-                if (currentLine.length() > 0) currentLine.append(" ");
-                currentLine.append(word);
-            } else {
-                if (currentLine.length() > 0) {
-                    lines.add(currentLine.toString());
-                    currentLine = new StringBuilder(word);
-                } else {
-                    // Single word is too long, add it anyway
-                    lines.add(word);
-                }
-            }
+        // Add indentation for code blocks and lists
+        for (int i = 0; i < line.getIndentLevel(); i++) {
+            currentX += this.font.width("  ");
         }
 
-        if (currentLine.length() > 0) {
-            lines.add(currentLine.toString());
-        }
+        // Draw each segment
+        for (TextSegment segment : line.getSegments()) {
+            String text = segment.getText();
+            int color = segment.getEffectiveColor();
 
-        return lines.isEmpty() ? List.of(text) : lines;
+            guiGraphics.drawString(this.font, text, currentX, y, color, false);
+            currentX += this.font.width(text);
+        }
     }
 
     @Override
     public boolean isPauseScreen() {
         return false; // Don't pause the game
-    }
-
-    /**
-     * Internal class to store terminal lines with color
-     */
-    private static class TerminalLine {
-        String text;
-        int color;
-
-        TerminalLine(String text, int color) {
-            this.text = text;
-            this.color = color;
-        }
     }
 }
