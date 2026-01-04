@@ -7,7 +7,7 @@ public class ModConfig {
     /**
      * OpenCode server URL
      */
-    public String serverUrl = "http://localhost:4096";
+    public String serverUrl = "http://127.0.0.1:4096";
 
     /**
      * Working directory for OpenCode operations

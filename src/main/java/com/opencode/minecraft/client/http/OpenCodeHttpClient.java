@@ -64,7 +64,7 @@ public class OpenCodeHttpClient {
                 })
                 .exceptionally(e -> {
                     connected = false;
-                    OpenCodeMod.LOGGER.warn("Health check failed: {}", e.getMessage());
+                    OpenCodeMod.LOGGER.error("Health check failed for {}: {}", baseUrl, e.getClass().getSimpleName(), e);
                     return false;
                 });
     }
