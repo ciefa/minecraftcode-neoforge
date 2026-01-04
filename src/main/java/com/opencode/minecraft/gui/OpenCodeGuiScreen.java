@@ -33,7 +33,6 @@ public class OpenCodeGuiScreen extends Screen {
     private EditBox inputField;
     private List<FormattedLine> messageHistory;
     private int scrollOffset = 0;
-    private static final int MAX_VISIBLE_LINES = 20;
     private StringBuilder currentAssistantMessage = new StringBuilder();
     private boolean receivingResponse = false;
 
@@ -262,8 +261,12 @@ public class OpenCodeGuiScreen extends Screen {
         int maxY = terminalY + terminalHeight - 40;
         int lineHeight = this.font.lineHeight + 2;
 
-        int startIndex = Math.max(0, messageHistory.size() - MAX_VISIBLE_LINES - scrollOffset);
-        int endIndex = Math.min(messageHistory.size(), startIndex + MAX_VISIBLE_LINES);
+        // Calculate how many lines can actually fit on screen
+        int availableHeight = maxY - (terminalY + 24);
+        int maxVisibleLines = Math.max(1, availableHeight / lineHeight);
+
+        int startIndex = Math.max(0, messageHistory.size() - maxVisibleLines - scrollOffset);
+        int endIndex = Math.min(messageHistory.size(), startIndex + maxVisibleLines);
 
         for (int i = startIndex; i < endIndex; i++) {
             if (messageY >= maxY) break;
@@ -287,10 +290,10 @@ public class OpenCodeGuiScreen extends Screen {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 
         // Draw scroll indicator if needed (tan/brown color)
-        if (messageHistory.size() > MAX_VISIBLE_LINES) {
+        if (messageHistory.size() > maxVisibleLines) {
             String scrollInfo = String.format("[↑↓ to scroll | %d/%d]",
-                Math.max(0, messageHistory.size() - MAX_VISIBLE_LINES - scrollOffset),
-                messageHistory.size() - MAX_VISIBLE_LINES);
+                Math.max(0, messageHistory.size() - maxVisibleLines - scrollOffset),
+                messageHistory.size() - maxVisibleLines);
             guiGraphics.drawString(this.font, scrollInfo, terminalX + terminalWidth - this.font.width(scrollInfo) - 10,
                 terminalY + terminalHeight - 10, 0xFF8b6f47, false);
         }
@@ -324,7 +327,10 @@ public class OpenCodeGuiScreen extends Screen {
 
         // Scroll with arrow keys
         if (keyCode == GLFW.GLFW_KEY_UP) {
-            scrollOffset = Math.min(scrollOffset + 1, Math.max(0, messageHistory.size() - MAX_VISIBLE_LINES));
+            int availableHeight = (this.height - 40 - 40 - 24);
+            int lineHeight = this.font.lineHeight + 2;
+            int maxVisibleLines = Math.max(1, availableHeight / lineHeight);
+            scrollOffset = Math.min(scrollOffset + 1, Math.max(0, messageHistory.size() - maxVisibleLines));
             return true;
         }
         if (keyCode == GLFW.GLFW_KEY_DOWN) {
@@ -343,8 +349,12 @@ public class OpenCodeGuiScreen extends Screen {
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
         // Scroll with mouse wheel
+        int availableHeight = (this.height - 40 - 40 - 24);
+        int lineHeight = this.font.lineHeight + 2;
+        int maxVisibleLines = Math.max(1, availableHeight / lineHeight);
+
         if (deltaY > 0) {
-            scrollOffset = Math.min(scrollOffset + 1, Math.max(0, messageHistory.size() - MAX_VISIBLE_LINES));
+            scrollOffset = Math.min(scrollOffset + 1, Math.max(0, messageHistory.size() - maxVisibleLines));
         } else if (deltaY < 0) {
             scrollOffset = Math.max(0, scrollOffset - 1);
         }
